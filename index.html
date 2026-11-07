@@ -1,0 +1,847 @@
+<!DOCTYPE html>
+<html class="dark" lang="id">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>EnergyHealing</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+<script>
+  tailwind.config = {
+    darkMode:"class",
+    theme:{
+      extend:{
+        colors:{
+          "primary":"#6fceab","secondary":"#3b82f6",
+          "background-dark":"#0a1210","background-light":"#f6f8f7",
+          "card-dark":"#16221d","border-dark":"#24342f",
+          "solar-yellow":"#fbbf24",
+        },
+        fontFamily:{"display":["Inter","sans-serif"]},
+      },
+    },
+  }
+</script>
+<style>
+*{font-family:'Inter',sans-serif;box-sizing:border-box;}
+body{background:#050b09;margin:0;overflow:hidden;}
+
+/* Phone frame */
+#app{width:100vw;height:100dvh;display:flex;align-items:center;justify-content:center;background:#050b09;}
+#phone{width:min(393px,100vw);height:min(852px,100dvh);position:relative;overflow:hidden;background:#0a1210;border-radius:min(40px,4vw);box-shadow:0 0 80px rgba(111,206,171,0.08),0 0 0 1px rgba(255,255,255,0.06);}
+
+/* Screens */
+.screen{display:none;position:absolute;inset:0;flex-direction:column;}
+.screen.active{display:flex;}
+
+/* Utilities */
+.hero-gradient{background:linear-gradient(180deg,rgba(10,18,16,0.2) 0%,rgba(10,18,16,0.98) 100%);}
+.satellite-grid{background-image:radial-gradient(circle,rgba(111,206,171,0.08) 1px,transparent 1px);background-size:40px 40px;}
+.eco-glow{box-shadow:0 0 40px rgba(111,206,171,0.15);}
+.glass{background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.06);backdrop-filter:blur(12px);}
+.glass-dark{background:rgba(0,0,0,0.5);backdrop-filter:blur(16px);}
+.card-dark-bg{background:#16221d;border:1px solid #24342f;}
+.hide-scroll{overflow-y:auto;scrollbar-width:none;-ms-overflow-style:none;}
+.hide-scroll::-webkit-scrollbar{display:none;}
+.map-overlay{background:linear-gradient(to bottom,rgba(10,18,16,0.3),rgba(10,18,16,0.1) 50%,rgba(10,18,16,0.5));}
+
+/* Animations */
+@keyframes ping{75%,100%{transform:scale(2);opacity:0;}}
+@keyframes pulse{0%,100%{opacity:1;}50%{opacity:.5;}}
+@keyframes fadeUp{from{opacity:0;transform:translateY(12px);}to{opacity:1;transform:translateY(0);}}
+@keyframes bounce{0%,100%{transform:translateY(-15%);}50%{transform:translateY(0);}}
+.animate-ping{animation:ping 1s cubic-bezier(0,0,0.2,1) infinite;}
+.animate-pulse{animation:pulse 2s ease infinite;}
+.animate-bounce1{animation:bounce 1s ease infinite;}
+.animate-bounce2{animation:bounce 1s ease 0.2s infinite;}
+.animate-bounce3{animation:bounce 1s ease 0.4s infinite;}
+.fadein{animation:fadeUp 0.3s ease forwards;}
+
+/* Nav */
+.bottom-nav{position:absolute;bottom:0;left:0;right:0;z-index:50;}
+.nav-item{display:flex;flex-direction:column;align-items:center;gap:4px;cursor:pointer;padding:4px 8px;}
+.nav-item .lbl{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;}
+.nav-active{color:#6fceab;}
+.nav-inactive{color:#64748b;}
+button{cursor:pointer;transition:all 0.15s;}
+button:active{transform:scale(0.97);}
+
+/* Before/after split */
+.before-after{position:relative;overflow:hidden;}
+.after-img{background-image:url(https://lh3.googleusercontent.com/aida-public/AB6AXuDDXf723zWt0yUSfuL82Zt-XxolfcgJoMA3VSRJtvkGj-cwVCaVNCtruGeWM7jumDE_kF7ZoI4uFxS_hH8xf1VjPbF4yRZ1nolzuAopcVZxNIj4a73buOR-tGGGlmx1mWE4SjHioLMCw02Bgzr16YVNxK-oVH9xrURtf9kjHWQTvI4AE2eXlLA7THcSskQxvevutrilCpibp2_gSCeQTzhl2MX-WGAStJmHRUIASwsv7O4lJCHMddWkuB1or_ETXT7h_DALQEGGfA);}
+.before-img{background-image:linear-gradient(rgba(0,0,0,0.3),rgba(0,0,0,0.3)),url(https://lh3.googleusercontent.com/aida-public/AB6AXuDI3X_y6CL-_AmkJGlnOIiaxHrCPnOPcw6TNuJxK2Qtev34udqUnOBSJbImY5a2KuGK9hTZtn0kEW9ZEdtHpBmUDBWC2v3qJyrRQucJa0pkqkoyNq6-CfAkI9GkMWA-Ujgxi0estDwNC3EBJe_fEY8-vIWyR7uxkGfJJOhnFLy0DzumE-50qtIMnWzlW5wDyuhzQcc4hQ82Eiv_XnSI-9lh0NjtYMpWiy75whHa4MVsVRsKSgWSxF-AdYG05_Fpue46o7MC_yYx7A);clip-path:inset(0 35% 0 0);}
+</style>
+</head>
+<body>
+<div id="app">
+<div id="phone">
+
+<!-- ═══════════════════════════════════════════════════
+     1. ONBOARDING
+═══════════════════════════════════════════════════ -->
+<div id="s-onboarding" class="screen active" style="background:#0a1210;">
+  <div class="relative flex flex-col h-full overflow-hidden">
+    <!-- bg -->
+    <div class="absolute inset-0 z-0">
+      <div class="absolute inset-0 bg-cover bg-center scale-110" style="background-image:url('https://lh3.googleusercontent.com/aida-public/AB6AXuA9ieuOTOAXnTVfck37r_Np_o9z2UChks-XRuusLbjzjnXsMghxtYV0h5QKZGBIR8m6FwVKmLIg2NpeaLR73XxHcmlHVhZuHmhooZrldMzbrJPDWnbhO2UuuEGC2BzUFP30O0O9TvzGSpunBvoCsrZ_lLkfmInZI5no43j_ZV1mSjwAVXUhCAiaMDPEPfWMg55dPkEeIqWhjGFyWapXJPdDP8NC9GcwkVIhsmw9L3o1o3y-qlwPngw_WD-FiMuWeGFx71mu5cXc5A')"></div>
+      <div class="absolute inset-0 hero-gradient"></div>
+      <div class="absolute inset-0 satellite-grid opacity-40"></div>
+      <div class="absolute top-16 left-6 border-l-2 border-t-2 border-primary/30 w-12 h-12"></div>
+      <div class="absolute top-16 right-6 border-r-2 border-t-2 border-secondary/30 w-12 h-12"></div>
+      <div class="absolute top-20 left-10 text-[9px] font-mono text-primary/60 tracking-widest uppercase">SATELLITE SYNC: ACTIVE</div>
+    </div>
+    <div class="relative z-10 flex flex-col h-full px-8 pb-10">
+      <div class="flex flex-col items-center pt-16">
+        <div class="relative flex items-center justify-center w-24 h-24 rounded-3xl bg-white/5 backdrop-blur-xl border border-white/10 eco-glow">
+          <span class="material-symbols-outlined text-primary text-5xl" style="font-variation-settings:'FILL' 1">eco</span>
+          <div class="absolute -bottom-1 -right-1 w-11 h-11 rounded-xl bg-background-dark flex items-center justify-center border border-secondary/40 shadow-lg">
+            <span class="material-symbols-outlined text-secondary text-2xl">solar_power</span>
+          </div>
+          <div class="absolute -top-1 -left-1 w-8 h-8 rounded-lg bg-background-dark flex items-center justify-center border border-primary/30">
+            <span class="material-symbols-outlined text-primary/80 text-base">satellite_alt</span>
+          </div>
+        </div>
+        <h1 class="mt-5 text-2xl font-bold tracking-tight text-white">Energy<span class="text-primary font-extrabold">Healing</span></h1>
+      </div>
+      <div class="flex-grow"></div>
+      <div class="mb-12 text-center space-y-5">
+        <h2 class="text-3xl font-extrabold leading-tight text-white tracking-tight">
+          Transformasi Lahan Kritis <br/>
+          <span class="text-transparent bg-clip-text bg-gradient-to-r from-primary via-emerald-400 to-secondary">Menjadi Masa Depan Energi Hijau</span>
+        </h2>
+        <p class="text-slate-400 text-base max-w-[300px] mx-auto leading-relaxed">Restorasi lingkungan berbasis AI dan PLTS terapung untuk lahan bekas tambang.</p>
+      </div>
+      <div class="flex w-full flex-row items-center justify-center gap-2.5 mb-10">
+        <div class="h-1.5 w-8 rounded-full bg-gradient-to-r from-primary to-emerald-400 shadow-[0_0_12px_rgba(111,206,171,0.4)]"></div>
+        <div class="h-1.5 w-1.5 rounded-full bg-slate-800"></div>
+        <div class="h-1.5 w-1.5 rounded-full bg-slate-800"></div>
+      </div>
+      <div class="flex flex-col gap-4 w-full">
+        <button onclick="go('dashboard')" class="flex items-center justify-center h-16 rounded-2xl bg-gradient-to-r from-primary to-emerald-500 text-background-dark text-lg font-bold shadow-xl shadow-primary/20">Daftar</button>
+        <button onclick="go('dashboard')" class="flex items-center justify-center h-16 rounded-2xl bg-white/5 backdrop-blur-md border border-white/10 text-white text-lg font-semibold">Masuk</button>
+      </div>
+      <div class="mt-8 text-center"><p class="text-[10px] text-slate-500 uppercase tracking-[0.3em] font-medium">Intelligence Satellite Monitoring v2.4</p></div>
+      <div class="mt-4 h-1.5 w-32 bg-white/10 rounded-full self-center"></div>
+    </div>
+    <!-- floating badge -->
+    <div class="absolute bottom-60 left-6 py-2 px-3 bg-white/5 border border-white/10 rounded-xl backdrop-blur-md pointer-events-none flex items-center gap-3 z-20">
+      <div class="relative w-2 h-2"><div class="absolute inset-0 bg-primary rounded-full animate-ping"></div><div class="w-2 h-2 bg-primary rounded-full relative"></div></div>
+      <span class="text-[10px] text-primary/80 font-mono tracking-wider">MONITORING POST-MINING SITE: 72% RECOVERED</span>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════
+     2. DASHBOARD
+═══════════════════════════════════════════════════ -->
+<div id="s-dashboard" class="screen" style="background:#0a1210;">
+  <header class="flex items-center justify-between px-5 pt-12 pb-4 border-b border-white/5 flex-shrink-0" style="background:rgba(10,18,16,0.9);backdrop-filter:blur(12px);">
+    <div class="flex items-center gap-3">
+      <div class="w-10 h-10 rounded-xl bg-primary/20 flex items-center justify-center border border-primary/30"><span class="material-symbols-outlined text-primary text-2xl">eco</span></div>
+      <div><h1 class="text-base font-bold text-white">EnergyHealing</h1><p class="text-[10px] uppercase tracking-widest text-primary font-bold">Restorasi Lahan Tambang</p></div>
+    </div>
+    <div class="flex items-center gap-3">
+      <button class="w-10 h-10 flex items-center justify-center rounded-full bg-white/5 text-slate-300"><span class="material-symbols-outlined text-xl">notifications</span></button>
+      <div class="w-10 h-10 rounded-full overflow-hidden border-2 border-primary/40 p-0.5"><img alt="Profile" class="w-full h-full rounded-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuB79SO_z0aOu6nkSwhZSPzBcIls8YMcwCr4MZsibLTc5jpwxoifjM-nD8X8musydTVL8uTTXQgdwinuzyuDcv_fphNYNlgSZEnu_0U19uJGbT2qcQhEMcwyx394etoEIEigz5fV21M8yhhZ2S5k0jdicyT7lXJyUcfsYorEQc6jXFyclYexdJRg_Gw4dNgrbROHypfpRnRNAZolJ8PpSRFXzXWK9HeeI764BemNZp9AkiF1DM15NixNdn8HGzd4uUNa56DPzSw-_g"/></div>
+    </div>
+  </header>
+  <div class="flex-1 hide-scroll px-5 py-5 space-y-5 pb-36">
+    <!-- Hero map -->
+    <div class="relative w-full rounded-2xl overflow-hidden border border-white/10 shadow-xl" style="aspect-ratio:16/10">
+      <div class="absolute inset-0 bg-cover bg-center" style="background-image:url('https://lh3.googleusercontent.com/aida-public/AB6AXuB7d1P_m-yquTCiBw_TJO2rII8IPr3WxPGY_uRVlU1-s261cqmc9NQ7IEn3-z5YvxbirRmXZ-nxBElLVQul7L5Wrfh7YgFHqoPwGxMtAKeTYr7FTmNjuX039M7iepD9X0z7kRtg1dVeYGFCOFjxEgLcv23_jANcOmj53Z_YqlsJ_jiXnR_LSsqk9ZViPV9F2QwsfsmhcaH-39HWsrr7PIFR0aXG_zl9PnDuKrE5nBM07Nuk6U7bGOd-AifOcqteZMVHzByinf-Ksw')"></div>
+      <div class="absolute inset-0 bg-gradient-to-t from-background-dark/90 via-transparent to-transparent"></div>
+      <div class="absolute top-4 left-4 flex gap-2">
+        <span class="px-3 py-1 bg-red-500/90 backdrop-blur text-white text-[10px] font-bold rounded-full flex items-center gap-1.5"><span class="w-1.5 h-1.5 bg-white rounded-full animate-pulse"></span> LIVE</span>
+        <span class="px-3 py-1 bg-black/60 backdrop-blur text-primary text-[10px] font-bold rounded-full border border-primary/20">SAT-ID: ZN-09</span>
+      </div>
+      <div class="absolute bottom-4 left-4 right-4 flex justify-between items-end">
+        <div>
+          <p class="text-[10px] text-slate-300 font-medium uppercase tracking-wider">Lokasi Proyek</p>
+          <h3 class="text-lg font-bold text-white">Zona Pemulihan Alpha</h3>
+          <p class="text-xs text-primary font-medium flex items-center gap-1"><span class="material-symbols-outlined text-[14px]">location_on</span> Kalimantan Timur</p>
+        </div>
+        <button onclick="go('map')" class="bg-primary/90 text-background-dark font-bold py-2 px-4 rounded-lg text-xs">Perbesar Peta</button>
+      </div>
+    </div>
+    <!-- Stats -->
+    <div class="grid grid-cols-2 gap-4">
+      <div class="glass p-5 rounded-2xl flex flex-col justify-between">
+        <div class="flex items-center justify-between mb-4"><div class="p-2 bg-amber-500/10 rounded-lg"><span class="material-symbols-outlined text-amber-500 text-xl">analytics</span></div><span class="text-[9px] font-bold text-slate-400 uppercase tracking-widest">Indeks Lahan</span></div>
+        <div><h4 class="text-3xl font-bold text-white">39,26%</h4><span class="px-2 py-0.5 bg-red-500/20 text-red-400 text-[10px] font-bold rounded uppercase">Buruk</span></div>
+        <p class="text-[10px] text-slate-500 mt-3">Perlu restorasi intensif segera.</p>
+      </div>
+      <div class="glass p-5 rounded-2xl flex flex-col justify-between">
+        <div class="flex items-center justify-between mb-4"><div class="p-2 bg-primary/10 rounded-lg"><span class="material-symbols-outlined text-primary text-xl">wb_sunny</span></div><span class="text-[9px] font-bold text-slate-400 uppercase tracking-widest">Kapasitas</span></div>
+        <div><h4 class="text-3xl font-bold text-white">120 <span class="text-base font-medium text-primary">MW</span></h4><span class="px-2 py-0.5 bg-primary/20 text-primary text-[10px] font-bold rounded uppercase">Potensial</span></div>
+        <p class="text-[10px] text-slate-500 mt-3">Estimasi PLTS Terapung.</p>
+      </div>
+    </div>
+    <!-- Progress -->
+    <div class="glass p-5 rounded-2xl">
+      <div class="flex items-center justify-between mb-5"><h3 class="font-bold text-sm text-white/90">Status Progres Restorasi</h3><span class="text-primary text-[10px] font-bold bg-primary/10 px-2 py-1 rounded">TAHAP 2 DARI 4</span></div>
+      <div class="flex justify-between items-end mb-2"><p class="text-xs font-medium text-slate-300">Pemulihan Galian</p><span class="text-sm font-bold text-primary">45%</span></div>
+      <div class="h-3 w-full bg-slate-800 rounded-full overflow-hidden p-0.5"><div class="h-full bg-primary rounded-full shadow-[0_0_12px_rgba(111,206,171,0.5)]" style="width:45%"></div></div>
+      <div class="grid grid-cols-4 gap-2 pt-3"><div class="h-1 rounded-full bg-primary"></div><div class="h-1 rounded-full bg-primary/40"></div><div class="h-1 rounded-full bg-slate-800"></div><div class="h-1 rounded-full bg-slate-800"></div></div>
+    </div>
+    <!-- Control Center -->
+    <div>
+      <h3 class="font-bold text-xs uppercase tracking-widest text-slate-500 mb-4 px-1">Pusat Kendali</h3>
+      <div class="grid grid-cols-2 gap-4">
+        <button onclick="go('map')" class="flex flex-col items-center gap-3 p-5 rounded-2xl bg-white/5 border border-white/5"><div class="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center"><span class="material-symbols-outlined text-primary text-2xl">map</span></div><span class="text-xs font-bold text-slate-200">Pemetaan Lahan</span></button>
+        <button onclick="go('ai')" class="flex flex-col items-center gap-3 p-5 rounded-2xl bg-white/5 border border-white/5"><div class="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center"><span class="material-symbols-outlined text-primary text-2xl">neurology</span></div><span class="text-xs font-bold text-slate-200 text-center leading-tight">AI Reklamasi<br/>Adaptif</span></button>
+        <button onclick="go('solar')" class="flex flex-col items-center gap-3 p-5 rounded-2xl bg-white/5 border border-white/5"><div class="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center"><span class="material-symbols-outlined text-primary text-2xl">model_training</span></div><span class="text-xs font-bold text-slate-200 text-center leading-tight">Simulasi<br/>Surya</span></button>
+        <button onclick="go('calendar')" class="flex flex-col items-center gap-3 p-5 rounded-2xl bg-white/5 border border-white/5"><div class="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center"><span class="material-symbols-outlined text-primary text-2xl">calendar_today</span></div><span class="text-xs font-bold text-slate-200">Kalender Proyek</span></button>
+        <button onclick="go('monitoring')" class="flex flex-col items-center gap-3 p-5 rounded-2xl bg-white/5 border border-white/5"><div class="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center"><span class="material-symbols-outlined text-primary text-2xl">qr_code_scanner</span></div><span class="text-xs font-bold text-slate-200 text-center leading-tight">Pemantauan<br/>& QR</span></button>
+        <button onclick="go('completion')" class="flex flex-col items-center gap-3 p-5 rounded-2xl bg-white/5 border border-white/5"><div class="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center"><span class="material-symbols-outlined text-primary text-2xl">check_circle</span></div><span class="text-xs font-bold text-slate-200 text-center leading-tight">Status<br/>Restorasi</span></button>
+      </div>
+    </div>
+  </div>
+  <!-- FAB -->
+  <button onclick="go('chat')" class="absolute bottom-24 right-5 w-14 h-14 bg-primary text-background-dark rounded-full shadow-[0_8px_24px_rgba(111,206,171,0.4)] flex items-center justify-center z-50"><span class="material-symbols-outlined text-3xl font-bold">smart_toy</span></button>
+  <!-- Nav -->
+  <div class="bottom-nav flex items-center justify-around px-4 pb-8 pt-3 border-t border-white/5" style="background:rgba(10,18,16,0.95);backdrop-filter:blur(20px);">
+    <div class="nav-item nav-active" onclick="go('dashboard')"><span class="material-symbols-outlined text-2xl" style="font-variation-settings:'FILL' 1">grid_view</span><span class="lbl">Beranda</span></div>
+    <div class="nav-item nav-inactive" onclick="go('ai')"><span class="material-symbols-outlined text-2xl">monitoring</span><span class="lbl">Analitik</span></div>
+    <div class="nav-item nav-inactive" onclick="go('map')"><span class="material-symbols-outlined text-2xl">forest</span><span class="lbl">Proyek</span></div>
+    <div class="nav-item nav-inactive"><span class="material-symbols-outlined text-2xl">settings</span><span class="lbl">Pengaturan</span></div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════
+     3. DIGITAL LAND MAPPING
+═══════════════════════════════════════════════════ -->
+<div id="s-map" class="screen" style="background:#0a1210;">
+  <div class="relative flex flex-col h-full overflow-hidden">
+    <div class="absolute inset-0 z-0">
+      <div class="w-full h-full bg-cover bg-center" style="background-image:url('https://lh3.googleusercontent.com/aida-public/AB6AXuBoC0gy5Cgs4FitmTlgrouXHoPejwtfP6VbXmYog55XVwje-Di6hX9Cr-_aRzSPhieGZdEKaD8QD0nqIU9rHfeWVN3frpbo6C_C4hNEU7YLEaZjemt-C5SQbLOJGMVIBTxK8TSi_VwgMyax_PUjY-PfYuLKkg9rEewrdZIqrCmJ5wIOi49gUJXLdBTis8E2xTVXygewueUmiCq_UiUFV9O-rSO6dQdGEaRNeF2pJhD6DFBtbKTne09UxP7qKfAup-nMVVs3reYERA')">
+        <div class="absolute inset-0 map-overlay"></div>
+      </div>
+      <svg class="absolute inset-0 w-full h-full opacity-60 pointer-events-none" viewBox="0 0 400 800" xmlns="http://www.w3.org/2000/svg">
+        <path d="M50,150 L120,130 L150,180 L100,220 Z" fill="#ef4444" stroke="#ef4444" stroke-width="2" fill-opacity="0.5"/>
+        <path d="M250,300 L320,310 L300,380 L220,350 Z" fill="#ef4444" stroke="#ef4444" stroke-width="2" fill-opacity="0.5"/>
+        <path d="M120,130 L220,100 L280,150 L150,180 Z" fill="#f97316" stroke="#f97316" stroke-width="2" fill-opacity="0.5"/>
+        <path d="M100,220 L180,250 L150,350 L80,320 Z" fill="#f97316" stroke="#f97316" stroke-width="2" fill-opacity="0.5"/>
+        <path d="M200,450 L350,420 L380,550 L220,580 Z" fill="#6fceab" stroke="#6fceab" stroke-width="2" fill-opacity="0.5"/>
+      </svg>
+    </div>
+    <!-- Top search -->
+    <div class="relative z-10 p-4 pt-14">
+      <div class="glass-dark rounded-2xl border border-white/10 p-2 shadow-2xl">
+        <div class="flex items-center gap-2">
+          <button onclick="go('dashboard')" class="flex h-10 w-10 items-center justify-center rounded-xl text-primary"><span class="material-symbols-outlined">menu</span></button>
+          <div class="flex flex-1 items-center gap-2 bg-black/30 rounded-xl px-3 py-2 border border-white/5">
+            <span class="material-symbols-outlined text-primary text-sm">search</span>
+            <input class="w-full bg-transparent border-none text-sm focus:outline-none placeholder:text-slate-500 text-slate-100 py-0" placeholder="Cari koordinat atau ID lokasi..." value="Site 22-A: Kalimantan Timur"/>
+          </div>
+          <button class="flex h-10 w-10 items-center justify-center rounded-xl text-slate-300"><span class="material-symbols-outlined">notifications</span></button>
+        </div>
+      </div>
+    </div>
+    <!-- Filter chips -->
+    <div class="relative z-10 flex gap-2 px-4 py-2 overflow-x-auto" style="scrollbar-width:none">
+      <button class="flex h-10 shrink-0 items-center gap-2 rounded-full glass-dark border border-primary/40 px-4 shadow-lg bg-primary/10"><div class="w-2 h-2 rounded-full bg-primary animate-pulse"></div><span class="text-xs font-semibold text-slate-100">NDVI</span></button>
+      <button class="flex h-10 shrink-0 items-center gap-2 rounded-full glass-dark border border-white/10 px-4 shadow-lg"><div class="w-2 h-2 rounded-full bg-slate-500"></div><span class="text-xs font-semibold text-slate-400">Indeks Kualitas Lahan</span></button>
+      <button class="flex h-10 shrink-0 items-center gap-2 rounded-full glass-dark border border-white/10 px-4 shadow-lg"><div class="w-2 h-2 rounded-full bg-slate-500"></div><span class="text-xs font-semibold text-slate-400">Data Iklim</span></button>
+    </div>
+    <!-- Right controls -->
+    <div class="absolute right-4 top-1/2 -translate-y-1/2 z-10 flex flex-col gap-3">
+      <div class="flex flex-col rounded-xl glass-dark border border-white/10 shadow-xl overflow-hidden">
+        <button class="flex h-12 w-12 items-center justify-center border-b border-white/5 text-slate-300"><span class="material-symbols-outlined">add</span></button>
+        <button class="flex h-12 w-12 items-center justify-center text-slate-300"><span class="material-symbols-outlined">remove</span></button>
+      </div>
+      <button class="flex h-12 w-12 items-center justify-center rounded-xl glass-dark border border-white/10 text-primary shadow-xl"><span class="material-symbols-outlined">near_me</span></button>
+      <button class="flex h-12 w-12 items-center justify-center rounded-xl glass-dark border border-white/10 text-slate-300 shadow-xl"><span class="material-symbols-outlined">layers</span></button>
+    </div>
+    <!-- AI button -->
+    <div class="absolute right-4 bottom-44 z-20">
+      <button onclick="go('ai')" class="flex items-center gap-3 bg-primary px-6 py-4 rounded-2xl shadow-[0_8px_30px_rgb(111,206,171,0.3)] border border-white/20"><span class="material-symbols-outlined text-background-dark font-bold">auto_awesome</span><span class="text-background-dark font-bold text-sm tracking-wide">Analisis dengan AI</span></button>
+    </div>
+    <div class="flex-1"></div>
+    <!-- Bottom legend -->
+    <div class="relative z-10 px-4 pb-2">
+      <div class="glass-dark rounded-2xl border border-white/10 p-5 shadow-2xl">
+        <div class="flex items-center justify-between mb-4"><h3 class="text-[11px] font-bold uppercase tracking-[0.1em] text-primary">Status Zonasi Lahan</h3><span class="text-[10px] bg-primary/10 text-primary border border-primary/20 px-2 py-0.5 rounded-full uppercase font-bold">Live GIS</span></div>
+        <div class="grid grid-cols-3 gap-3">
+          <div class="flex flex-col items-start gap-2 p-2.5 rounded-xl bg-black/20 border border-white/5"><div class="h-1.5 w-full rounded-full bg-red-500"></div><span class="text-[10px] text-slate-400 font-bold uppercase">Lubang</span></div>
+          <div class="flex flex-col items-start gap-2 p-2.5 rounded-xl bg-black/20 border border-white/5"><div class="h-1.5 w-full rounded-full bg-orange-500"></div><span class="text-[10px] text-slate-400 font-bold uppercase">Kritis</span></div>
+          <div class="flex flex-col items-start gap-2 p-2.5 rounded-xl bg-black/20 border border-white/5"><div class="h-1.5 w-full rounded-full bg-primary"></div><span class="text-[10px] text-slate-400 font-bold uppercase">Pulih</span></div>
+        </div>
+      </div>
+    </div>
+    <!-- Nav -->
+    <div class="relative z-20 flex h-24 w-full border-t border-white/5 px-6 pb-8 pt-2" style="background:rgba(0,0,0,0.5);backdrop-filter:blur(16px);">
+      <div class="nav-item nav-inactive flex-1" onclick="go('dashboard')"><span class="material-symbols-outlined text-2xl">grid_view</span><span class="lbl">BERANDA</span></div>
+      <div class="nav-item nav-active flex-1"><span class="material-symbols-outlined text-2xl" style="font-variation-settings:'FILL' 1">map</span><span class="lbl">PETA</span></div>
+      <div class="nav-item nav-inactive flex-1" onclick="go('solar')"><span class="material-symbols-outlined text-2xl">wb_sunny</span><span class="lbl">ENERGI</span></div>
+      <div class="nav-item nav-inactive flex-1"><span class="material-symbols-outlined text-2xl">person</span><span class="lbl">PROFIL</span></div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════
+     4. AI RECLAMATION ADVICE
+═══════════════════════════════════════════════════ -->
+<div id="s-ai" class="screen" style="background:#0a1210;">
+  <header class="flex items-center justify-between px-5 pt-12 pb-4 border-b border-slate-800/50 flex-shrink-0" style="background:#0a1210;">
+    <button onclick="go('dashboard')" class="flex items-center justify-center w-10 h-10 rounded-full hover:bg-slate-800"><span class="material-symbols-outlined text-white">arrow_back_ios_new</span></button>
+    <div class="flex flex-col items-center"><h1 class="text-lg font-bold text-white">Rekomendasi Reklamasi AI</h1><span class="text-[10px] uppercase tracking-widest text-primary font-semibold">Analisis EnergyHealing</span></div>
+    <button class="flex items-center justify-center w-10 h-10 rounded-full hover:bg-slate-800"><span class="material-symbols-outlined text-primary">analytics</span></button>
+  </header>
+  <div class="flex-1 hide-scroll px-5 py-5">
+    <div class="grid grid-cols-2 gap-4 mb-6">
+      <div class="glass p-5 rounded-xl flex flex-col gap-1"><span class="text-xs font-medium text-slate-400">Skor Kesehatan Lahan</span><div class="flex items-baseline gap-1"><span class="text-2xl font-bold text-white">74</span><span class="text-sm text-slate-400">/100</span></div><div class="flex items-center text-primary text-xs font-bold uppercase mt-2"><span class="material-symbols-outlined text-sm mr-1">trending_up</span> +12% Pemulihan</div></div>
+      <div class="glass p-5 rounded-xl flex flex-col gap-1"><span class="text-xs font-medium text-slate-400">Proyeksi Garis Waktu</span><div class="flex items-baseline gap-1"><span class="text-2xl font-bold text-white">12-36</span><span class="text-sm text-slate-400">Bulan</span></div><div class="flex items-center text-slate-400 text-xs font-bold uppercase mt-2"><span class="material-symbols-outlined text-sm mr-1">schedule</span> Optimal</div></div>
+    </div>
+    <div class="flex items-center justify-between mb-4"><h2 class="text-xl font-bold text-white">Metode Rekomendasi</h2><span class="text-xs bg-primary/20 text-primary px-2 py-1 rounded font-bold">3 SIAP</span></div>
+    <div class="space-y-5 pb-4">
+      <!-- Card 1: Revegetasi -->
+      <div class="glass rounded-xl overflow-hidden">
+        <div class="relative h-40 w-full overflow-hidden">
+          <div class="absolute inset-0 bg-cover bg-center" style="background-image:url('https://lh3.googleusercontent.com/aida-public/AB6AXuAt4446E9batAHv1Rwo8_ZahpZ-tRRzSZDBKVauRXZiCBeReiXAe6M4Fd2MQ7n2Lny2hfWKGL5UhwbvVbhL3UnahfnoNNuygwMdOgPfDoY6hAY8mXdVdP1PJsoQ14sMNohBRflhYXov3geFDfabHpE5I7rsTzmre5t69Vm-HtpC7LxTXSFlqjhaSzNDIi_6gUWotMiegnFsdcXUfcB1XRM3L96Hb1CVFGO_WFOERv6SqQn4vEyyp7DxHtKV6iem5ywOGD0ARurJVw')"></div>
+          <div class="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent"></div>
+          <div class="absolute bottom-4 left-4"><h3 class="text-lg font-bold text-white">Revegetasi</h3><p class="text-slate-300 text-xs">Restorasi pengikatan nitrogen</p></div>
+          <div class="absolute top-4 right-4 bg-green-500/90 text-white text-[10px] font-bold px-2 py-1 rounded uppercase tracking-wider">Risiko Rendah</div>
+        </div>
+        <div class="p-5">
+          <div class="grid grid-cols-2 gap-4 mb-4">
+            <div><p class="text-[10px] uppercase text-slate-500 font-bold mb-1">Tingkat Keberhasilan</p><div class="flex items-center gap-2"><div class="h-1.5 flex-1 bg-slate-800 rounded-full overflow-hidden"><div class="h-full bg-primary" style="width:88%"></div></div><span class="text-sm font-bold text-primary">88%</span></div></div>
+            <div><p class="text-[10px] uppercase text-slate-500 font-bold mb-1">Garis Waktu</p><span class="text-sm font-bold text-white">12-18 Bulan</span></div>
+          </div>
+          <p class="text-sm text-slate-400 mb-4 leading-relaxed">Penerapan campuran tanaman asli dan legum untuk menstabilkan integritas lapisan tanah atas dan memulai siklus karbon alami.</p>
+          <button class="w-full py-2.5 rounded-lg border border-primary/40 text-primary text-sm font-bold">Spesifikasi Implementasi</button>
+        </div>
+      </div>
+      <!-- Card 2: Biochar -->
+      <div class="glass rounded-xl overflow-hidden">
+        <div class="relative h-40 w-full overflow-hidden">
+          <div class="absolute inset-0 bg-cover bg-center" style="background-image:url('https://lh3.googleusercontent.com/aida-public/AB6AXuBz8AD1kYLEdBrMe9FgUQ8-IE4BOi9NkDPD5yIhtKq1514r5--y1BfHGfKgeVIdb0EDoZUiJmuADS631dZ5FklSNWBKsvq58fbvv3Z0O_pugcf66AALS3zT-iJ7W-3KAAe8jmOKQuC6TE0KMTX1hp_gI9QoBYJhn6Uhlr-J6MUBOTJhbP3JN-GQSAJrNRqtTVDfn6GdrGkZwEHBrm9LItFRmsqKRXuHSEEEvbDb_C5SIkidNc0YWO1NHRQrwk4fHKikxTt0Uv9YjA')"></div>
+          <div class="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent"></div>
+          <div class="absolute bottom-4 left-4"><h3 class="text-lg font-bold text-white">Pengolahan Tanah Biochar</h3><p class="text-slate-300 text-xs">Pengayaan tanah & penyeimbangan pH</p></div>
+          <div class="absolute top-4 right-4 bg-yellow-500/90 text-white text-[10px] font-bold px-2 py-1 rounded uppercase tracking-wider">Risiko Sedang</div>
+        </div>
+        <div class="p-5">
+          <div class="grid grid-cols-2 gap-4 mb-4">
+            <div><p class="text-[10px] uppercase text-slate-500 font-bold mb-1">Tingkat Keberhasilan</p><div class="flex items-center gap-2"><div class="h-1.5 flex-1 bg-slate-800 rounded-full overflow-hidden"><div class="h-full bg-primary" style="width:72%"></div></div><span class="text-sm font-bold text-primary">72%</span></div></div>
+            <div><p class="text-[10px] uppercase text-slate-500 font-bold mb-1">Garis Waktu</p><span class="text-sm font-bold text-white">6-12 Bulan</span></div>
+          </div>
+          <p class="text-sm text-slate-400 mb-4 leading-relaxed">Aplikasi residu biomassa berpori tinggi untuk menetralkan limpasan beracun dan mengikat kontaminan logam berat dalam tanah.</p>
+          <button class="w-full py-2.5 rounded-lg border border-primary/40 text-primary text-sm font-bold">Spesifikasi Implementasi</button>
+        </div>
+      </div>
+      <!-- Card 3: Air Void -->
+      <div class="glass rounded-xl overflow-hidden">
+        <div class="relative h-40 w-full overflow-hidden">
+          <div class="absolute inset-0 bg-cover bg-center" style="background-image:url('https://lh3.googleusercontent.com/aida-public/AB6AXuDlqefl6isvutEGlc-c6rToN9_KJCOooIHBnDzg6DyrqhH8_H03QchIDreVK_7JOYE6yA15WPrSOPFnX524oDla1_V9ovrifgWGbSQXyFQ0oJ1bieqtqUA0lTgV9u9q7qykYxzjTo0Svt0w6B8kWzTntyKxPoABPz0feKdJJpiKYXUh7s5I564wDXXTYueKjKRDu92WU17idAJLI-l3xAbx2oryWcnbNg8Sj2X5C9LtKkBLYxJt-Ly9Kq9mZiWb3XHZP8iVgXx7-A')"></div>
+          <div class="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent"></div>
+          <div class="absolute bottom-4 left-4"><h3 class="text-lg font-bold text-white">Pengelolaan Air Void</h3><p class="text-slate-300 text-xs">Integrasi platform PLTS terapung</p></div>
+          <div class="absolute top-4 right-4 bg-red-500/90 text-white text-[10px] font-bold px-2 py-1 rounded uppercase tracking-wider">Risiko Tinggi</div>
+        </div>
+        <div class="p-5">
+          <div class="grid grid-cols-2 gap-4 mb-4">
+            <div><p class="text-[10px] uppercase text-slate-500 font-bold mb-1">Tingkat Keberhasilan</p><div class="flex items-center gap-2"><div class="h-1.5 flex-1 bg-slate-800 rounded-full overflow-hidden"><div class="h-full bg-primary" style="width:95%"></div></div><span class="text-sm font-bold text-primary">95%</span></div></div>
+            <div><p class="text-[10px] uppercase text-slate-500 font-bold mb-1">Garis Waktu</p><span class="text-sm font-bold text-white">24-36 Bulan</span></div>
+          </div>
+          <p class="text-sm text-slate-400 mb-4 leading-relaxed">Pemasangan unit terapung EnergyHealing untuk mencegah penguapan dan menyediakan filtrasi otomatis bagi lubang bekas tambang.</p>
+          <button class="w-full py-2.5 rounded-lg border border-primary/40 text-primary text-sm font-bold">Spesifikasi Implementasi</button>
+        </div>
+      </div>
+    </div>
+  </div>
+  <!-- Bottom -->
+  <div class="flex-shrink-0 border-t border-slate-800 p-4 pb-8" style="background:rgba(10,18,16,0.9);backdrop-filter:blur(12px);">
+    <button class="w-full bg-primary text-slate-900 h-14 rounded-xl font-bold flex items-center justify-center gap-3 mb-3"><span class="material-symbols-outlined">picture_as_pdf</span>Unduh Laporan Teknis</button>
+    <nav class="flex justify-around items-center pt-1">
+      <div class="nav-item nav-inactive" onclick="go('dashboard')"><span class="material-symbols-outlined">dashboard</span><span class="lbl">Dasbor</span></div>
+      <div class="nav-item nav-active"><span class="material-symbols-outlined" style="font-variation-settings:'FILL' 1">auto_awesome</span><span class="lbl">Saran AI</span></div>
+      <div class="nav-item nav-inactive" onclick="go('map')"><span class="material-symbols-outlined">map</span><span class="lbl">Peta</span></div>
+      <div class="nav-item nav-inactive"><span class="material-symbols-outlined">settings</span><span class="lbl">Pengaturan</span></div>
+    </nav>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════
+     5. SOLAR SIMULATION
+═══════════════════════════════════════════════════ -->
+<div id="s-solar" class="screen" style="background:#0a110e;">
+  <header class="flex items-center justify-between px-6 pt-14 pb-4 flex-shrink-0 border-b sticky top-0 z-50" style="background:rgba(22,34,29,0.75);backdrop-filter:blur(16px);border-color:#24342f;">
+    <button onclick="go('dashboard')" class="flex items-center justify-center w-10 h-10 rounded-full hover:bg-white/10"><span class="material-symbols-outlined text-slate-100">arrow_back_ios_new</span></button>
+    <div class="flex flex-col items-center"><h1 class="text-lg font-bold text-white">Simulasi PLTS</h1><span class="text-[10px] uppercase tracking-widest text-solar-yellow font-bold">EnergyHealing</span></div>
+    <button class="flex items-center justify-center w-10 h-10 rounded-full hover:bg-white/10"><span class="material-symbols-outlined text-slate-100">layers</span></button>
+  </header>
+  <div class="flex-1 hide-scroll pb-44">
+    <!-- Hero image 4:5 -->
+    <div class="relative w-full" style="aspect-ratio:4/5">
+      <div class="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-background-dark z-10"></div>
+      <div class="w-full h-full bg-cover bg-center" style="background-image:url('https://lh3.googleusercontent.com/aida-public/AB6AXuAJQYD0VKEnHcauka1ooHZlByspiPUkjvC2vDnDYYeFC9LLpY405J7BgJWvcxLA-FtDX6yKehd6tBkynDCK33ZC3ZbZTqeh5Xj3oiPRU39gCPqf6Sz-C1yVSh-iN4QLQMZlmwhA9_KTNp08pOsBPhurQoOQOTwUEoIH85dZxjULhtlCUit2CFuNIbiLOcYn_l7cYY8ZpYxuuXDepkTzalLcCKUduPvKYNN_JiDjgwnhgydzLB9OXVwLvp7NNizxUtF0pQFjwWrgjQ');"></div>
+      <div class="absolute top-4 left-4 z-20 rounded-xl p-3 border border-white/10" style="background:rgba(22,34,29,0.75);backdrop-filter:blur(16px);">
+        <div class="flex items-center gap-2"><span class="material-symbols-outlined text-solar-yellow text-sm">wb_sunny</span><span class="text-xs font-medium text-white">Intensitas: 84%</span></div>
+      </div>
+      <div class="absolute bottom-12 right-4 z-20 flex flex-col gap-3">
+        <button class="p-3 rounded-full border border-white/10 text-white" style="background:rgba(22,34,29,0.75);backdrop-filter:blur(16px);"><span class="material-symbols-outlined">videocam</span></button>
+        <button class="p-3 rounded-full border border-white/10 text-white" style="background:rgba(22,34,29,0.75);backdrop-filter:blur(16px);"><span class="material-symbols-outlined">3d_rotation</span></button>
+        <button class="p-3 rounded-full border border-white/10 text-white" style="background:rgba(22,34,29,0.75);backdrop-filter:blur(16px);"><span class="material-symbols-outlined">zoom_in</span></button>
+      </div>
+      <div class="absolute bottom-8 left-6 z-20">
+        <p class="text-white/70 text-xs font-medium mb-1 flex items-center gap-1"><span class="material-symbols-outlined text-[14px]">location_on</span>Danau Bekas Tambang Alpha</p>
+        <h2 class="text-2xl font-bold text-white">Mockup 3D PLTS</h2>
+      </div>
+    </div>
+    <div class="px-6 -mt-6 relative z-20">
+      <div class="grid grid-cols-2 gap-3">
+        <div class="card-dark-bg rounded-2xl p-4 shadow-xl">
+          <div class="flex items-center gap-2 mb-3"><span class="material-symbols-outlined text-solar-yellow text-xl">bolt</span><span class="text-[9px] font-bold uppercase text-slate-400 tracking-wider">Kapasitas</span></div>
+          <p class="text-2xl font-bold text-white">25.5 <span class="text-sm font-normal text-slate-400">MW</span></p>
+          <div class="mt-2 flex items-center gap-1"><span class="material-symbols-outlined text-primary text-xs">trending_up</span><span class="text-[10px] text-primary font-medium">+5.2% Efisiensi</span></div>
+        </div>
+        <div class="card-dark-bg rounded-2xl p-4 shadow-xl">
+          <div class="flex items-center gap-2 mb-3"><span class="material-symbols-outlined text-solar-yellow text-xl">electric_bolt</span><span class="text-[9px] font-bold uppercase text-slate-400 tracking-wider">Produksi</span></div>
+          <p class="text-2xl font-bold text-white">38,400 <span class="text-sm font-normal text-slate-400">MWh</span></p>
+          <div class="mt-2 flex items-center gap-1"><span class="material-symbols-outlined text-primary text-xs">calendar_today</span><span class="text-[10px] text-slate-400 font-medium">Estimasi Tahunan</span></div>
+        </div>
+        <div class="card-dark-bg rounded-2xl p-4 shadow-xl">
+          <div class="flex items-center gap-2 mb-3"><span class="material-symbols-outlined text-solar-yellow text-xl">payments</span><span class="text-[9px] font-bold uppercase text-slate-400 tracking-wider">Pendapatan</span></div>
+          <p class="text-xl font-bold text-white">Rp 62,4M <span class="text-[10px] font-normal text-slate-400">/thn</span></p>
+          <div class="mt-2"><span class="text-[10px] text-slate-400 font-medium">ROI: 6.2 Tahun</span></div>
+        </div>
+        <div class="card-dark-bg rounded-2xl p-4 shadow-xl border-l-4 border-l-primary">
+          <div class="flex items-center gap-2 mb-3"><span class="material-symbols-outlined text-primary text-xl">eco</span><span class="text-[9px] font-bold uppercase text-slate-400 tracking-wider">Offset Karbon</span></div>
+          <p class="text-2xl font-bold text-white">12,500 <span class="text-sm font-normal text-slate-400">Ton</span></p>
+          <div class="mt-2"><span class="text-[10px] text-primary font-medium">Dampak Lingkungan: Tinggi</span></div>
+        </div>
+      </div>
+      <!-- Tab -->
+      <div class="mt-8 flex p-1 rounded-xl" style="background:rgba(10,17,14,0.5);border:1px solid #24342f;">
+        <button class="flex-1 py-2.5 text-xs font-bold text-background-dark bg-solar-yellow rounded-lg shadow-sm">Data Simulasi</button>
+        <button class="flex-1 py-2.5 text-xs font-bold text-slate-400">Spek Teknis</button>
+      </div>
+      <!-- Chart -->
+      <div class="mt-6 card-dark-bg rounded-2xl p-6 mb-8" style="min-height:160px;">
+        <div class="flex justify-between items-start mb-4">
+          <div><h4 class="text-sm font-bold text-white">Performa Diurnal</h4><p class="text-[10px] text-slate-400">Proyeksi siklus 24 jam</p></div>
+          <span class="material-symbols-outlined text-solar-yellow">info</span>
+        </div>
+        <div class="flex items-end gap-1.5 h-24 w-full px-2">
+          <div class="flex-1 rounded-t-sm" style="height:15%;background:rgba(111,206,171,0.2)"></div>
+          <div class="flex-1 rounded-t-sm" style="height:25%;background:rgba(111,206,171,0.3)"></div>
+          <div class="flex-1 rounded-t-sm" style="height:50%;background:rgba(111,206,171,0.4)"></div>
+          <div class="flex-1 bg-solar-yellow rounded-t-sm" style="height:85%"></div>
+          <div class="flex-1 bg-solar-yellow rounded-t-sm" style="height:95%"></div>
+          <div class="flex-1 bg-solar-yellow rounded-t-sm shadow-[0_0_15px_rgba(251,191,36,0.3)]" style="height:100%"></div>
+          <div class="flex-1 bg-solar-yellow rounded-t-sm" style="height:80%"></div>
+          <div class="flex-1 rounded-t-sm" style="height:55%;background:rgba(111,206,171,0.4)"></div>
+          <div class="flex-1 rounded-t-sm" style="height:30%;background:rgba(111,206,171,0.3)"></div>
+          <div class="flex-1 rounded-t-sm" style="height:20%;background:rgba(111,206,171,0.2)"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <!-- Bottom CTA -->
+  <div class="absolute bottom-0 left-0 right-0 p-6 pb-8 border-t z-50" style="background:rgba(22,34,29,0.75);backdrop-filter:blur(16px);border-color:#24342f50;">
+    <button class="w-full bg-solar-yellow text-background-dark font-bold py-4 rounded-2xl flex items-center justify-center gap-3 shadow-[0_4px_24px_rgba(0,0,0,0.4)] mb-4"><span class="material-symbols-outlined font-bold">description</span>Buat Laporan Tekno-Ekonomi</button>
+    <nav class="flex justify-between items-center px-4">
+      <div class="nav-item nav-active" onclick="go('dashboard')"><span class="material-symbols-outlined">explore</span><span class="lbl">Jelajah</span></div>
+      <div class="nav-item nav-inactive"><span class="material-symbols-outlined">model_training</span><span class="lbl">Simulasi</span></div>
+      <div class="nav-item nav-inactive"><span class="material-symbols-outlined">analytics</span><span class="lbl">Analisis</span></div>
+      <div class="nav-item nav-inactive"><span class="material-symbols-outlined">person</span><span class="lbl">Profil</span></div>
+    </nav>
+    <div class="h-1.5 w-32 bg-slate-800 rounded-full mx-auto mt-6 opacity-50"></div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════
+     6. PROJECT CALENDAR
+═══════════════════════════════════════════════════ -->
+<div id="s-calendar" class="screen" style="background:#0a1210;">
+  <header class="sticky top-0 z-20 flex items-center justify-between px-4 py-3 border-b flex-shrink-0" style="background:rgba(10,18,16,0.8);backdrop-filter:blur(12px);border-color:rgba(111,206,171,0.1);">
+    <div class="flex items-center gap-3">
+      <div class="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center border border-primary/30"><span class="material-symbols-outlined text-primary text-2xl">eco</span></div>
+      <div><h1 class="text-lg font-bold text-white">Kalender Proyek</h1><p class="text-xs text-slate-400">EnergyHealing • Sektor B</p></div>
+    </div>
+    <div class="flex gap-2">
+      <button onclick="go('dashboard')" class="w-10 h-10 rounded-full flex items-center justify-center hover:bg-slate-800"><span class="material-symbols-outlined text-white">arrow_back_ios_new</span></button>
+      <div class="w-10 h-10 rounded-full overflow-hidden border border-primary/20"><img alt="Profil" class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAk-xHFoFT9NQG6biWWcO4eHwsIRPFhlMdnlffAn4czU_9mrfslCqq5KrczpSSsJgaHX20o8c5oN9YmGHKUY0RTWeLBoM4pr3tbWfxlJcK6lAuF0rVkELQfqoZnHzdUzr3BOt0K69wF9qNsXCEdcxjHY462fCW-PqPeB6FPqRFl3EzoYxJQOkUSFpCO6_DUgOSId-EkrLZPEnF3zYX75bBTXEGBNiJX8o83VADBKjoytdOHu0_zGl3RXwJEVtOrhBbcGrhQ_1emGA"/></div>
+    </div>
+  </header>
+  <div class="flex-1 hide-scroll pb-24">
+    <div class="p-4">
+      <!-- AI Saran -->
+      <div class="relative overflow-hidden rounded-xl bg-primary/10 border border-primary/20 p-5 mb-5">
+        <div class="absolute -right-4 -top-4 w-24 h-24 bg-primary/5 rounded-full blur-2xl"></div>
+        <div class="flex items-start gap-4">
+          <div class="bg-primary text-background-dark p-2 rounded-lg"><span class="material-symbols-outlined">smart_toy</span></div>
+          <div class="flex-1">
+            <h3 class="font-bold text-primary text-xs mb-1 uppercase tracking-wider">Saran Penanaman AI</h3>
+            <p class="text-sm text-slate-200 leading-relaxed mb-3">Jendela tanam terbaik: <span class="font-bold text-primary">Nov - Jan</span>. Tingkat kelembaban tanah 14% lebih tinggi dari rata-rata.</p>
+            <button class="bg-primary text-background-dark px-4 py-1.5 rounded-lg text-xs font-bold flex items-center gap-1">Jadwalkan Tugas <span class="material-symbols-outlined text-sm">arrow_forward</span></button>
+          </div>
+        </div>
+      </div>
+      <!-- Month nav -->
+      <div class="flex items-center justify-between mb-4">
+        <div class="flex items-center gap-2">
+          <button class="w-8 h-8 rounded-full hover:bg-slate-800 flex items-center justify-center"><span class="material-symbols-outlined text-sm text-white">chevron_left</span></button>
+          <span class="text-base font-bold text-white">Maret 2026</span>
+          <button class="w-8 h-8 rounded-full hover:bg-slate-800 flex items-center justify-center"><span class="material-symbols-outlined text-sm text-white">chevron_right</span></button>
+        </div>
+        <button class="bg-primary/10 text-primary border border-primary/20 px-3 py-1 rounded-lg text-xs font-bold">+ Acara</button>
+      </div>
+      <!-- Days header -->
+      <div class="grid grid-cols-7 mb-2">
+        <div class="text-center text-[10px] font-bold text-slate-500 py-1">Min</div><div class="text-center text-[10px] font-bold text-slate-500 py-1">Sen</div><div class="text-center text-[10px] font-bold text-slate-500 py-1">Sel</div><div class="text-center text-[10px] font-bold text-slate-500 py-1">Rab</div><div class="text-center text-[10px] font-bold text-slate-500 py-1">Kam</div><div class="text-center text-[10px] font-bold text-slate-500 py-1">Jum</div><div class="text-center text-[10px] font-bold text-slate-500 py-1">Sab</div>
+      </div>
+      <!-- Calendar -->
+      <div class="grid grid-cols-7 gap-1 mb-5" id="cal-grid">
+        <!-- blank -->
+        <div class="aspect-square"></div><div class="aspect-square"></div><div class="aspect-square"></div><div class="aspect-square"></div><div class="aspect-square"></div>
+        <!-- Mar 1 (today) -->
+        <div class="aspect-square flex items-center justify-center rounded-xl bg-primary text-background-dark text-sm font-black shadow-[0_0_12px_rgba(111,206,171,0.4)]">1</div>
+        <div class="aspect-square flex items-center justify-center rounded-xl text-sm text-slate-300">2</div>
+        <!-- Week 2 -->
+        <div class="aspect-square flex items-center justify-center rounded-xl text-sm text-slate-300">3</div>
+        <div class="aspect-square flex items-center justify-center rounded-xl bg-primary/20 border border-primary/40 text-sm font-bold text-primary">4</div>
+        <div class="aspect-square flex items-center justify-center text-sm text-slate-300">5</div><div class="aspect-square flex items-center justify-center text-sm text-slate-300">6</div>
+        <div class="aspect-square flex items-center justify-center rounded-xl bg-blue-500/20 border border-blue-500/40 text-sm font-bold text-blue-400">7</div>
+        <div class="aspect-square flex items-center justify-center text-sm text-slate-300">8</div><div class="aspect-square flex items-center justify-center text-sm text-slate-300">9</div>
+        <!-- Week 3 -->
+        <div class="aspect-square flex items-center justify-center text-sm text-slate-300">10</div><div class="aspect-square flex items-center justify-center text-sm text-slate-300">11</div>
+        <div class="aspect-square flex items-center justify-center rounded-xl bg-amber-500/20 border border-amber-500/40 text-sm font-bold text-amber-400">12</div>
+        <div class="aspect-square flex items-center justify-center text-sm text-slate-300">13</div><div class="aspect-square flex items-center justify-center text-sm text-slate-300">14</div><div class="aspect-square flex items-center justify-center text-sm text-slate-300">15</div><div class="aspect-square flex items-center justify-center text-sm text-slate-300">16</div>
+        <!-- Week 4 -->
+        <div class="aspect-square flex items-center justify-center text-sm text-slate-300">17</div><div class="aspect-square flex items-center justify-center text-sm text-slate-300">18</div><div class="aspect-square flex items-center justify-center text-sm text-slate-300">19</div><div class="aspect-square flex items-center justify-center text-sm text-slate-300">20</div>
+        <div class="aspect-square flex items-center justify-center rounded-xl bg-primary/20 border border-primary/40 text-sm font-bold text-primary">21</div>
+        <div class="aspect-square flex items-center justify-center text-sm text-slate-300">22</div><div class="aspect-square flex items-center justify-center text-sm text-slate-300">23</div>
+        <!-- Week 5 -->
+        <div class="aspect-square flex items-center justify-center text-sm text-slate-300">24</div><div class="aspect-square flex items-center justify-center text-sm text-slate-300">25</div><div class="aspect-square flex items-center justify-center text-sm text-slate-300">26</div>
+        <div class="aspect-square flex items-center justify-center rounded-xl bg-red-500/20 border border-red-500/40 text-sm font-bold text-red-400">27</div>
+        <div class="aspect-square flex items-center justify-center text-sm text-slate-300">28</div><div class="aspect-square flex items-center justify-center text-sm text-slate-300">29</div><div class="aspect-square flex items-center justify-center text-sm text-slate-300">30</div>
+        <div class="aspect-square flex items-center justify-center text-sm text-slate-300">31</div>
+      </div>
+      <!-- Events -->
+      <h3 class="text-xs font-bold uppercase tracking-widest text-slate-500 mb-3">Jadwal Bulan Ini</h3>
+      <div class="space-y-3">
+        <div class="glass p-4 rounded-xl flex items-center gap-4"><div class="w-10 h-10 rounded-xl bg-primary/20 flex items-center justify-center flex-shrink-0"><span class="material-symbols-outlined text-primary text-lg">eco</span></div><div class="flex-1"><p class="text-sm font-bold text-white">Survei Revegetasi Zona A</p><p class="text-xs text-slate-400">4 Maret • 08:00 WIB</p></div><span class="text-[10px] bg-primary/20 text-primary px-2 py-1 rounded font-bold">Aktif</span></div>
+        <div class="glass p-4 rounded-xl flex items-center gap-4"><div class="w-10 h-10 rounded-xl bg-blue-500/20 flex items-center justify-center flex-shrink-0"><span class="material-symbols-outlined text-blue-400 text-lg">solar_power</span></div><div class="flex-1"><p class="text-sm font-bold text-white">Instalasi Panel PLTS Batch 3</p><p class="text-xs text-slate-400">7 Maret • 09:00 WIB</p></div><span class="text-[10px] bg-blue-500/20 text-blue-400 px-2 py-1 rounded font-bold">Jadwal</span></div>
+        <div class="glass p-4 rounded-xl flex items-center gap-4"><div class="w-10 h-10 rounded-xl bg-amber-500/20 flex items-center justify-center flex-shrink-0"><span class="material-symbols-outlined text-amber-400 text-lg">science</span></div><div class="flex-1"><p class="text-sm font-bold text-white">Uji Kualitas Tanah Biochar</p><p class="text-xs text-slate-400">12 Maret • 10:30 WIB</p></div><span class="text-[10px] bg-amber-500/20 text-amber-400 px-2 py-1 rounded font-bold">Lab</span></div>
+        <div class="glass p-4 rounded-xl flex items-center gap-4"><div class="w-10 h-10 rounded-xl bg-red-500/20 flex items-center justify-center flex-shrink-0"><span class="material-symbols-outlined text-red-400 text-lg">warning</span></div><div class="flex-1"><p class="text-sm font-bold text-white">Review Laporan Audit</p><p class="text-xs text-slate-400">27 Maret • 14:00 WIB</p></div><span class="text-[10px] bg-red-500/20 text-red-400 px-2 py-1 rounded font-bold">Deadline</span></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════
+     7. PROJECT MONITORING & QR
+═══════════════════════════════════════════════════ -->
+<div id="s-monitoring" class="screen" style="background:#0f1715;">
+  <header class="sticky top-0 z-20 flex items-center bg-background-dark/90 backdrop-blur-md p-4 justify-between border-b border-slate-800 flex-shrink-0" style="background:rgba(15,23,21,0.9);">
+    <div class="flex items-center gap-3">
+      <button onclick="go('dashboard')" class="flex w-10 h-10 items-center justify-center rounded-full hover:bg-slate-800"><span class="material-symbols-outlined text-white">arrow_back_ios_new</span></button>
+      <div><h1 class="text-lg font-bold text-white leading-tight">Pemantauan Proyek</h1><p class="text-[10px] text-slate-400 font-bold uppercase tracking-wider">Situs 042 • EnergyHealing</p></div>
+    </div>
+    <button class="relative flex w-10 h-10 items-center justify-center rounded-full bg-slate-800">
+      <span class="material-symbols-outlined text-white">notifications</span>
+      <span class="absolute top-2.5 right-2.5 flex h-2 w-2"><span class="relative inline-flex rounded-full h-2 w-2 bg-red-500"></span></span>
+    </button>
+  </header>
+  <div class="flex-1 hide-scroll pb-28">
+    <div class="flex flex-col gap-5 p-4">
+      <!-- Alert -->
+      <div class="rounded-xl border border-red-500/30 bg-red-900/10 p-4">
+        <div class="flex gap-3">
+          <div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-red-500 text-white"><span class="material-symbols-outlined">priority_high</span></div>
+          <div><p class="text-red-400 text-sm font-bold">Pemeliharaan Terlambat</p><p class="text-slate-400 text-xs mt-0.5">Platform PLTS B-12 memerlukan rekalibrasi sensor segera untuk efisiensi optimal.</p></div>
+        </div>
+        <button class="mt-3 w-full h-9 bg-red-600 text-white text-xs font-bold rounded-lg shadow-md shadow-red-500/20">Tangani Sekarang</button>
+      </div>
+      <!-- Unit info -->
+      <div class="flex items-start gap-4">
+        <div class="w-24 h-24 rounded-2xl ring-4 ring-slate-800 shadow-lg bg-cover bg-center flex-shrink-0" style="background-image:url('https://lh3.googleusercontent.com/aida-public/AB6AXuBbcteSCh4WQMWcPWUxVRFg5qKYLZXBdDCISoRc1K83utV8Kq3AwnbBeyVhnrf4gxmQpHteAAeCgiFxDXDxcK19MAF4W1ChyRxRbr0Uq9MqUB4X5AbVjm6zsqxjo8uESHUPHKr4HWN2rjnDvmF_00ay5Ejt1xvPULacndXNLhx6Fu1LVhYDTtgzoDfgrw-IP_2FCLxMQGH0R1x5SSGedbbT27n9RgdsThW77J-fkk6O3o29_OSWWDLlK07ji7k_iKv6BXL_X_pVXw')"></div>
+        <div class="flex flex-col pt-1">
+          <h2 class="text-xl font-bold text-white leading-tight">Unit EnergyHealing - Situs 042</h2>
+          <p class="text-slate-400 text-xs mt-1">Zona Restorasi Bekas Tambang Kalimantan</p>
+          <div class="mt-3 flex flex-wrap gap-2">
+            <span class="inline-flex items-center rounded-full bg-primary/15 px-2.5 py-1 text-[10px] font-bold text-primary uppercase tracking-wider">Aktif</span>
+            <span class="inline-flex items-center rounded-full bg-slate-800 px-2.5 py-1 text-[10px] font-bold text-slate-400 uppercase tracking-wider">Wilayah A</span>
+          </div>
+        </div>
+      </div>
+      <!-- Status chips -->
+      <div class="flex gap-2 overflow-x-auto" style="scrollbar-width:none">
+        <div class="flex h-10 shrink-0 items-center gap-2 rounded-xl bg-red-500/10 border border-red-500/20 px-4"><span class="material-symbols-outlined text-red-500 text-[18px]">error</span><p class="text-red-500 text-xs font-bold">Kritis (1)</p></div>
+        <div class="flex h-10 shrink-0 items-center gap-2 rounded-xl bg-amber-500/10 border border-amber-500/20 px-4"><span class="material-symbols-outlined text-amber-500 text-[18px]">pending</span><p class="text-amber-500 text-xs font-bold">Sedang Berjalan (4)</p></div>
+        <div class="flex h-10 shrink-0 items-center gap-2 rounded-xl bg-emerald-500/10 border border-emerald-500/20 px-4"><span class="material-symbols-outlined text-emerald-500 text-[18px]">verified</span><p class="text-emerald-500 text-xs font-bold">Terestorasi (12)</p></div>
+      </div>
+      <!-- QR Code -->
+      <div class="rounded-2xl bg-slate-900 border border-slate-800 p-6 flex flex-col items-center gap-5 shadow-sm">
+        <div class="text-center w-full"><p class="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-500 mb-4">Kode QR Aset Unik</p>
+          <div class="relative inline-block p-4 bg-white rounded-2xl border-2 border-slate-100 shadow-inner">
+            <div class="w-44 h-44 bg-center bg-no-repeat bg-contain" style="background-image:url('https://lh3.googleusercontent.com/aida-public/AB6AXuDeq5EmfUJ0jypYvA7JGmU-EyXXlYZHF2lRAbV7olYwC0BLVLOS19EAIy_JAe_D8CFU_YZmbMzm2OhwcQyBnHmFDNej3JfbQ2ZiU7tl5g3UkexNPw1e-9_l7HAP4JywYbKUUaLgZlHLr6S8OshzYhwVeRkbYL2l_7NocI_HKjjxrAKRlCFi8v7uUU3WFLYzp7MZv2EGxLQtE_nOgqQgVhPWJ7NffN9i1OJp3P3ZuDaS5AryDP3E8UNifmtuGCLOfrnHCXWL4AQRwg')"></div>
+          </div>
+        </div>
+        <div class="text-center"><p class="text-sm font-black text-slate-200">UID: EH-042-ALPHA-2024</p><p class="text-[11px] text-slate-400 mt-1 italic">Pindai untuk mengakses riwayat teknis & log operasional</p></div>
+        <button class="flex w-full items-center justify-center gap-2 rounded-xl h-14 bg-primary text-slate-900 text-sm font-bold shadow-lg shadow-primary/25"><span class="material-symbols-outlined">qr_code_scanner</span>Pindai Kode Unit</button>
+      </div>
+      <!-- Live chart -->
+      <div class="rounded-2xl bg-slate-900 border border-slate-800 p-5 shadow-sm">
+        <div class="flex items-center justify-between mb-5">
+          <div><h3 class="text-sm font-bold text-white">Progres Waktu Nyata</h3><p class="text-[10px] text-slate-400 font-medium">Output Energi & Laju Restorasi</p></div>
+          <div class="flex items-center gap-2 px-2 py-1 bg-emerald-500/10 rounded-md">
+            <div class="relative flex"><span class="animate-ping absolute inline-flex h-2 w-2 rounded-full bg-emerald-400 opacity-75"></span><span class="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span></div>
+            <span class="text-[10px] text-primary uppercase font-black tracking-tighter">Live</span>
+          </div>
+        </div>
+        <div class="h-40 w-full flex items-end gap-1.5 px-1">
+          <div class="w-full rounded-t-md" style="height:45%;background:rgba(111,206,171,0.1)"></div>
+          <div class="w-full rounded-t-md" style="height:55%;background:rgba(111,206,171,0.2)"></div>
+          <div class="w-full rounded-t-md" style="height:40%;background:rgba(111,206,171,0.25)"></div>
+          <div class="w-full rounded-t-md" style="height:60%;background:rgba(111,206,171,0.3)"></div>
+          <div class="w-full rounded-t-md" style="height:75%;background:rgba(111,206,171,0.4)"></div>
+          <div class="w-full rounded-t-md" style="height:65%;background:rgba(111,206,171,0.5)"></div>
+          <div class="w-full rounded-t-md" style="height:85%;background:rgba(111,206,171,0.6)"></div>
+          <div class="w-full rounded-t-md" style="height:70%;background:rgba(111,206,171,0.7)"></div>
+          <div class="w-full rounded-t-md" style="height:90%;background:rgba(111,206,171,0.8)"></div>
+          <div class="w-full rounded-t-md bg-primary" style="height:100%"></div>
+          <div class="w-full rounded-t-md bg-primary shadow-[0_0_15px_rgba(111,206,171,0.3)]" style="height:88%"></div>
+        </div>
+        <div class="mt-5 grid grid-cols-3 gap-2 border-t border-slate-800 pt-4">
+          <div class="text-center"><p class="text-[9px] text-slate-500 uppercase font-bold tracking-wider mb-1">Daya Gen</p><p class="text-base font-bold text-primary">12.4 <span class="text-[10px] opacity-70">MW</span></p></div>
+          <div class="text-center border-x border-slate-800"><p class="text-[9px] text-slate-500 uppercase font-bold tracking-wider mb-1">Efisiensi</p><p class="text-base font-bold text-white">94.2%</p></div>
+          <div class="text-center"><p class="text-[9px] text-slate-500 uppercase font-bold tracking-wider mb-1">Restorasi</p><p class="text-base font-bold text-white">68.1%</p></div>
+        </div>
+      </div>
+      <!-- Timeline -->
+      <div class="flex flex-col gap-5">
+        <div class="flex items-center justify-between px-1">
+          <h3 class="text-sm font-bold text-white">Garis Waktu Milestones</h3>
+          <span class="text-[10px] text-primary font-bold bg-primary/10 px-2 py-0.5 rounded-full">Target 2026</span>
+        </div>
+        <div class="relative space-y-8 pl-8 before:absolute before:left-3 before:top-2 before:bottom-2 before:w-[2px] before:bg-slate-800">
+          <div class="relative"><div class="absolute -left-8 top-1 h-6 w-6 rounded-full bg-emerald-500 flex items-center justify-center ring-4 ring-background-dark z-10"><span class="material-symbols-outlined text-white text-[14px]">check</span></div><div class="flex flex-col gap-1"><div class="flex items-center justify-between"><h4 class="text-sm font-bold text-white">Sinkronisasi Grid & Sistem</h4><span class="text-[10px] font-bold text-slate-500">12 OKT</span></div><p class="text-xs text-slate-400">Hub utama diinisialisasi dan berhasil terhubung dengan jaringan listrik regional.</p><span class="mt-1 text-[9px] font-black text-emerald-400 uppercase tracking-widest">Selesai</span></div></div>
+          <div class="relative"><div class="absolute -left-8 top-1 h-6 w-6 rounded-full bg-primary flex items-center justify-center ring-4 ring-background-dark z-10"><span class="material-symbols-outlined text-slate-900 text-[14px]">sync</span></div><div class="flex flex-col gap-1"><div class="flex items-center justify-between"><h4 class="text-sm font-bold text-white">Instalasi Panel Surya (Alpha)</h4><span class="text-[10px] font-bold text-slate-500">20 OKT</span></div><p class="text-xs text-slate-400">Tahap pertama panel surya terapung dijangkarkan di zona pemulihan A.</p><span class="mt-1 text-[9px] font-black text-primary uppercase tracking-widest">Sedang Berjalan</span></div></div>
+          <div class="relative opacity-60"><div class="absolute -left-8 top-1 h-6 w-6 rounded-full bg-slate-700 ring-4 ring-background-dark z-10"></div><div class="flex flex-col gap-1"><div class="flex items-center justify-between"><h4 class="text-sm font-bold text-white">Restorasi Kualitas Air</h4><span class="text-[10px] font-bold text-slate-500">02 NOV</span></div><p class="text-xs text-slate-400">Pemasangan unit filtrasi biologis untuk menstabilkan tingkat keasaman air.</p><span class="mt-1 text-[9px] font-black text-slate-500 uppercase tracking-widest">Mendatang</span></div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <nav class="absolute bottom-0 left-0 right-0 border-t border-slate-800 pb-8 pt-3 px-4 z-30" style="background:rgba(15,23,21,0.9);backdrop-filter:blur(20px);">
+    <div class="flex gap-2">
+      <div class="flex flex-1 flex-col items-center justify-center gap-1 nav-inactive nav-item" onclick="go('dashboard')"><span class="material-symbols-outlined text-[24px]">home</span><span class="lbl">Beranda</span></div>
+      <div class="flex flex-1 flex-col items-center justify-center gap-1 nav-active nav-item"><span class="material-symbols-outlined text-[24px]" style="font-variation-settings:'FILL' 1">monitoring</span><span class="lbl">Pantau</span></div>
+      <div class="flex flex-1 flex-col items-center justify-center gap-1 nav-inactive nav-item" onclick="go('map')"><span class="material-symbols-outlined text-[24px]">map</span><span class="lbl">Peta</span></div>
+      <div class="flex flex-1 flex-col items-center justify-center gap-1 nav-inactive nav-item"><span class="material-symbols-outlined text-[24px]">settings</span><span class="lbl">Pengaturan</span></div>
+    </div>
+  </nav>
+</div>
+
+<!-- ═══════════════════════════════════════════════════
+     8. RESTORATION COMPLETION
+═══════════════════════════════════════════════════ -->
+<div id="s-completion" class="screen" style="background:#141e1a;">
+  <header class="sticky top-0 z-30 flex items-center justify-between px-4 py-3 border-b flex-shrink-0" style="background:rgba(20,30,26,0.8);backdrop-filter:blur(12px);border-color:rgba(111,206,171,0.1);">
+    <button onclick="go('dashboard')" class="flex items-center justify-center p-2 rounded-full hover:bg-primary/10"><span class="material-symbols-outlined text-white">arrow_back_ios</span></button>
+    <h1 class="text-lg font-bold text-white">Status Restorasi</h1>
+    <button class="flex items-center justify-center p-2 rounded-full hover:bg-primary/10"><span class="material-symbols-outlined text-white">share</span></button>
+  </header>
+  <div class="flex-1 hide-scroll pb-28">
+    <!-- Celebration -->
+    <section class="flex flex-col items-center pt-10 pb-6 px-6 text-center">
+      <div class="relative mb-6">
+        <div class="absolute inset-0 bg-primary/25 blur-3xl rounded-full scale-150"></div>
+        <div class="relative bg-primary text-background-dark w-24 h-24 rounded-full flex items-center justify-center shadow-[0_0_40px_rgba(111,206,171,0.5)]"><span class="material-symbols-outlined text-6xl font-bold">check_circle</span></div>
+      </div>
+      <h2 class="text-3xl font-bold text-white mb-2">Proyek Selesai</h2>
+      <p class="text-slate-400 text-base max-w-[300px]">Sektor 7G - Copper Ridge telah berhasil direstorasi menjadi ekosistem yang seimbang.</p>
+    </section>
+    <!-- Before/After -->
+    <section class="px-4 mb-8">
+      <div class="bg-slate-800/40 rounded-2xl overflow-hidden p-1 border border-white/5">
+        <div class="relative rounded-xl overflow-hidden before-after" style="aspect-ratio:4/3">
+          <div class="absolute inset-0 bg-cover bg-center after-img"></div>
+          <div class="absolute inset-0 bg-cover bg-center before-img"></div>
+          <div class="absolute top-4 left-4 bg-black/50 backdrop-blur-md px-3 py-1 rounded-full text-[10px] font-bold text-white uppercase tracking-widest border border-white/10">Sebelum</div>
+          <div class="absolute top-4 right-4 bg-primary/90 backdrop-blur-md px-3 py-1 rounded-full text-[10px] font-bold text-background-dark uppercase tracking-widest">Sesudah</div>
+          <div class="absolute inset-y-0 left-[65%] w-1 bg-white shadow-xl flex items-center justify-center">
+            <div class="w-10 h-10 bg-white rounded-full shadow-2xl flex items-center justify-center text-slate-900 -translate-x-0"><span class="material-symbols-outlined text-lg">unfold_more</span></div>
+          </div>
+        </div>
+        <div class="flex justify-between items-center px-4 py-4">
+          <div><span class="text-[10px] uppercase font-bold text-slate-500 tracking-tighter">Lokasi</span><p class="text-sm font-semibold text-white">Lahan Bekas Tambang</p></div>
+          <div class="flex flex-col items-end"><span class="text-[10px] uppercase font-bold text-primary tracking-tighter">Platform</span><span class="text-sm font-bold text-primary">EnergyHealing</span></div>
+        </div>
+      </div>
+    </section>
+    <!-- Stats -->
+    <section class="px-4 grid grid-cols-2 gap-4 mb-8">
+      <div class="bg-slate-900/50 border border-primary/10 p-5 rounded-2xl shadow-sm">
+        <div class="flex items-center gap-2 mb-3 text-primary"><span class="material-symbols-outlined text-xl">eco</span><span class="text-[10px] font-bold uppercase tracking-widest">Indeks LQI</span></div>
+        <div class="flex items-baseline gap-1"><span class="text-3xl font-bold text-white">88</span><span class="text-sm font-medium text-primary">/100</span></div>
+        <div class="mt-2 text-[11px] text-slate-400 flex items-center gap-1"><span class="material-symbols-outlined text-[14px] text-primary">trending_up</span>Naik 62% dari awal</div>
+      </div>
+      <div class="bg-slate-900/50 border border-primary/10 p-5 rounded-2xl shadow-sm">
+        <div class="flex items-center gap-2 mb-3 text-primary"><span class="material-symbols-outlined text-xl">bolt</span><span class="text-[10px] font-bold uppercase tracking-widest">Energi Surya</span></div>
+        <div class="flex items-baseline gap-1"><span class="text-3xl font-bold text-white">12.4</span><span class="text-sm font-medium text-primary">GWh</span></div>
+        <div class="mt-2 text-[11px] text-slate-400 flex items-center gap-1"><span class="material-symbols-outlined text-[14px]">wb_sunny</span>Produksi Tahunan</div>
+      </div>
+    </section>
+    <!-- Details -->
+    <section class="px-4 mb-8">
+      <div class="bg-slate-900/50 border border-primary/10 rounded-2xl divide-y overflow-hidden" style="divide-color:rgba(111,206,171,0.05)">
+        <div class="p-4 flex items-center justify-between">
+          <div class="flex items-center gap-3"><div class="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center text-primary"><span class="material-symbols-outlined">calendar_today</span></div><div><p class="text-[10px] text-slate-400 font-bold uppercase tracking-tighter">Durasi Restorasi</p><p class="font-semibold text-white">18 Bulan</p></div></div>
+          <span class="text-[10px] font-bold px-2 py-1 bg-primary/20 text-primary rounded-lg uppercase">Selesai</span>
+        </div>
+        <div class="p-4 flex items-center justify-between">
+          <div class="flex items-center gap-3"><div class="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center text-primary"><span class="material-symbols-outlined">grid_4x4</span></div><div><p class="text-[10px] text-slate-400 font-bold uppercase tracking-tighter">Luas Area</p><p class="font-semibold text-white">420 Hektar</p></div></div>
+          <button onclick="go('map')" class="text-primary text-sm font-bold">Lihat Peta</button>
+        </div>
+      </div>
+    </section>
+    <!-- Actions -->
+    <section class="px-4 flex flex-col gap-3">
+      <button class="w-full bg-primary text-background-dark font-bold py-4 rounded-2xl flex items-center justify-center gap-2 shadow-lg shadow-primary/20"><span class="material-symbols-outlined">download_for_offline</span>Unduh Laporan Akhir</button>
+      <button onclick="go('monitoring')" class="w-full bg-slate-800 text-slate-100 font-bold py-4 rounded-2xl flex items-center justify-center gap-2"><span class="material-symbols-outlined text-slate-400">gallery_thumbnail</span>Portofolio Proyek</button>
+    </section>
+  </div>
+  <nav class="absolute bottom-0 left-0 right-0 pb-8 pt-3 px-6 z-40 border-t" style="background:rgba(20,30,26,0.95);backdrop-filter:blur(20px);border-color:rgba(111,206,171,0.1);">
+    <div class="flex items-center justify-between">
+      <div class="nav-item nav-inactive" onclick="go('dashboard')"><span class="material-symbols-outlined">home</span><span class="lbl">Beranda</span></div>
+      <div class="nav-item nav-active"><span class="material-symbols-outlined" style="font-variation-settings:'FILL' 1">eco</span><span class="lbl">Proyek</span></div>
+      <div class="nav-item nav-inactive"><span class="material-symbols-outlined">analytics</span><span class="lbl">Analisis</span></div>
+      <div class="nav-item nav-inactive"><span class="material-symbols-outlined">person</span><span class="lbl">Profil</span></div>
+    </div>
+  </nav>
+</div>
+
+<!-- ═══════════════════════════════════════════════════
+     9. VIRTUAL ASSISTANT CHAT
+═══════════════════════════════════════════════════ -->
+<div id="s-chat" class="screen" style="background:#0f1715;">
+  <header class="sticky top-0 z-20 flex items-center justify-between px-4 py-3 border-b flex-shrink-0" style="background:rgba(15,23,21,0.7);backdrop-filter:blur(20px);border-color:rgba(255,255,255,0.1);">
+    <div class="flex items-center gap-3">
+      <div class="relative">
+        <div class="w-11 h-11 rounded-full flex items-center justify-center shadow-lg shadow-primary/20" style="background:linear-gradient(to bottom right,#6fceab,#2d5a4c)"><span class="material-symbols-outlined text-white text-[26px]" style="font-variation-settings:'FILL' 1">eco</span></div>
+        <span class="absolute bottom-0 right-0 block h-3 w-3 rounded-full bg-green-500 border-2" style="border-color:#0f1715"></span>
+      </div>
+      <div><h1 class="text-[15px] font-bold text-white">Asisten Restorasi</h1><div class="flex items-center gap-1.5"><span class="w-1.5 h-1.5 rounded-full bg-primary animate-pulse"></span><span class="text-[11px] font-medium text-slate-400">Aktif Sekarang</span></div></div>
+    </div>
+    <div class="flex items-center gap-1">
+      <button onclick="go('dashboard')" class="flex w-10 h-10 items-center justify-center rounded-full"><span class="material-symbols-outlined text-slate-300">arrow_back_ios_new</span></button>
+      <button class="flex w-10 h-10 items-center justify-center rounded-full"><span class="material-symbols-outlined text-slate-300">more_horiz</span></button>
+    </div>
+  </header>
+  <div id="chat-msgs" class="flex-1 hide-scroll p-4 space-y-5 pb-40">
+    <div class="flex justify-center my-2"><span class="px-3 py-1 rounded-full bg-slate-800/50 text-[10px] font-bold uppercase tracking-wider text-slate-500">Hari Ini</span></div>
+    <!-- AI msg 1 -->
+    <div class="flex items-start gap-2.5 max-w-[88%]">
+      <div class="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center shrink-0 border border-primary/20 mt-1"><span class="material-symbols-outlined text-[18px] text-primary" style="font-variation-settings:'FILL' 1">smart_toy</span></div>
+      <div class="flex flex-col gap-1.5">
+        <div class="bg-slate-800 p-3.5 rounded-2xl rounded-tl-none shadow-sm border border-slate-700"><p class="text-[14px] leading-[1.5] text-slate-200">Halo! Saya Asisten Virtual EnergyHealing. Saya siap membantu Anda dalam perencanaan restorasi lahan bekas tambang atau instalasi PLTS terapung. Apa yang ingin Anda ketahui hari ini?</p></div>
+        <span class="text-[10px] text-slate-400 ml-1">09:41</span>
+      </div>
+    </div>
+    <!-- User msg -->
+    <div class="flex flex-col items-end gap-1.5 ml-auto max-w-[85%]">
+      <div class="bg-primary text-slate-900 p-3.5 rounded-2xl rounded-tr-none shadow-md shadow-primary/10"><p class="text-[14px] leading-[1.5] font-medium">Apa saja manfaat utama PLTS terapung di danau bekas tambang?</p></div>
+      <span class="text-[10px] text-slate-400 mr-1">09:42</span>
+    </div>
+    <!-- AI msg 2 -->
+    <div class="flex items-start gap-2.5 max-w-[88%]">
+      <div class="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center shrink-0 border border-primary/20 mt-1"><span class="material-symbols-outlined text-[18px] text-primary" style="font-variation-settings:'FILL' 1">smart_toy</span></div>
+      <div class="flex flex-col gap-1.5">
+        <div class="bg-slate-800 p-3.5 rounded-2xl rounded-tl-none shadow-sm border border-slate-700">
+          <p class="text-[14px] leading-[1.5] text-slate-200 mb-3">Pemasangan PLTS terapung (Floating Solar) memiliki beberapa keunggulan strategis:</p>
+          <ul class="space-y-2 text-[13px] text-slate-300">
+            <li class="flex gap-2"><span class="material-symbols-outlined text-primary text-[16px]">check_circle</span><span><strong class="text-white">Efisiensi Tinggi:</strong> Suhu air yang dingin meningkatkan kinerja panel surya hingga 10%.</span></li>
+            <li class="flex gap-2"><span class="material-symbols-outlined text-primary text-[16px]">check_circle</span><span><strong class="text-white">Konservasi Air:</strong> Mengurangi penguapan air di kolam tambang hingga 70%.</span></li>
+            <li class="flex gap-2"><span class="material-symbols-outlined text-primary text-[16px]">check_circle</span><span><strong class="text-white">Tanpa Konflik Lahan:</strong> Memanfaatkan area yang biasanya tidak produktif.</span></li>
+          </ul>
+        </div>
+        <span class="text-[10px] text-slate-400 ml-1">09:42</span>
+      </div>
+    </div>
+    <!-- Typing indicator -->
+    <div id="typing-indicator" class="flex items-center gap-3 px-3 py-2 bg-slate-800/30 w-fit rounded-full">
+      <div class="flex gap-1"><span class="w-1.5 h-1.5 bg-primary/40 rounded-full animate-bounce1"></span><span class="w-1.5 h-1.5 bg-primary/60 rounded-full animate-bounce2"></span><span class="w-1.5 h-1.5 bg-primary rounded-full animate-bounce3"></span></div>
+      <span class="text-[11px] font-medium text-slate-400 italic">Menganalisis data lahan...</span>
+    </div>
+  </div>
+  <!-- Input area -->
+  <div class="absolute bottom-0 left-0 right-0 z-30">
+    <div class="flex gap-2 overflow-x-auto px-4 py-3" style="scrollbar-width:none;background:linear-gradient(to top,#0f1715,rgba(15,23,21,0.9),transparent)">
+      <button onclick="sendQuick('Metode reklamasi terbaik?')" class="shrink-0 px-4 py-2 rounded-full border border-primary/40 bg-slate-800 text-primary text-[12px] font-semibold active:scale-95 shadow-sm">Metode reklamasi terbaik?</button>
+      <button onclick="sendQuick('Biaya PLTS terapung?')" class="shrink-0 px-4 py-2 rounded-full border border-primary/40 bg-slate-800 text-primary text-[12px] font-semibold active:scale-95 shadow-sm">Biaya PLTS terapung?</button>
+      <button onclick="sendQuick('pH tanah optimal?')" class="shrink-0 px-4 py-2 rounded-full border border-primary/40 bg-slate-800 text-primary text-[12px] font-semibold active:scale-95 shadow-sm">pH tanah optimal</button>
+    </div>
+    <div class="border-t border-slate-800 p-4 pb-10" style="background:#0f1715;">
+      <div class="flex items-center gap-2 bg-slate-800/80 p-1.5 rounded-2xl border border-slate-700">
+        <button class="flex w-10 h-10 items-center justify-center text-slate-400"><span class="material-symbols-outlined">add_circle</span></button>
+        <input id="chat-input" type="text" placeholder="Ketik pesan..." class="flex-1 bg-transparent border-none focus:outline-none text-[15px] text-slate-200 placeholder:text-slate-400" onkeydown="if(event.key==='Enter')sendMsg()"/>
+        <button onclick="sendMsg()" class="flex w-10 h-10 items-center justify-center bg-primary rounded-xl text-slate-900 shadow-lg shadow-primary/20"><span class="material-symbols-outlined font-bold">arrow_upward</span></button>
+      </div>
+    </div>
+  </div>
+</div>
+
+</div><!-- end phone -->
+</div><!-- end app -->
+
+<script>
+// Navigation
+function go(id) {
+  document.querySelectorAll('.screen').forEach(s => {
+    s.classList.remove('active');
+    s.style.animation = '';
+  });
+  const t = document.getElementById('s-' + id);
+  if (t) {
+    t.classList.add('active');
+    t.style.animation = 'fadeUp 0.28s ease forwards';
+    // scroll to top
+    const scrollable = t.querySelector('.hide-scroll');
+    if (scrollable) scrollable.scrollTop = 0;
+  }
+}
+
+// Chat
+function sendMsg() {
+  const inp = document.getElementById('chat-input');
+  const txt = inp.value.trim();
+  if (!txt) return;
+  appendUser(txt);
+  inp.value = '';
+  setTimeout(() => appendAI(aiReply(txt)), 1000);
+}
+function sendQuick(txt) {
+  appendUser(txt);
+  setTimeout(() => appendAI(aiReply(txt)), 1000);
+}
+function ts() { return new Date().toLocaleTimeString('id-ID',{hour:'2-digit',minute:'2-digit'}); }
+function appendUser(txt) {
+  const c = document.getElementById('chat-msgs');
+  const tip = document.getElementById('typing-indicator');
+  const el = document.createElement('div');
+  el.className = 'flex flex-col items-end gap-1.5 ml-auto max-w-[85%] fadein';
+  el.innerHTML = `<div class="bg-primary text-slate-900 p-3.5 rounded-2xl rounded-tr-none shadow-md shadow-primary/10"><p class="text-[14px] leading-[1.5] font-medium">${txt}</p></div><span class="text-[10px] text-slate-400 mr-1">${ts()}</span>`;
+  c.insertBefore(el, tip);
+  c.scrollTop = c.scrollHeight;
+}
+function appendAI(txt) {
+  const c = document.getElementById('chat-msgs');
+  const tip = document.getElementById('typing-indicator');
+  const el = document.createElement('div');
+  el.className = 'flex items-start gap-2.5 max-w-[88%] fadein';
+  el.innerHTML = `<div class="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center shrink-0 border border-primary/20 mt-1"><span class="material-symbols-outlined text-[18px] text-primary" style="font-variation-settings:'FILL' 1">smart_toy</span></div><div class="flex flex-col gap-1.5"><div class="bg-slate-800 p-3.5 rounded-2xl rounded-tl-none shadow-sm border border-slate-700"><p class="text-[14px] leading-[1.5] text-slate-200">${txt}</p></div><span class="text-[10px] text-slate-400 ml-1">${ts()}</span></div>`;
+  c.insertBefore(el, tip);
+  c.scrollTop = c.scrollHeight;
+}
+function aiReply(msg) {
+  const m = msg.toLowerCase();
+  if (m.includes('reklamasi') || m.includes('metode')) return 'Metode reklamasi terbaik tergantung kondisi lahan. Untuk tanah asam tinggi, kami rekomendasikan <strong class="text-primary">Biochar + Revegetasi</strong> secara bersamaan. Tingkat keberhasilan kombinasi ini mencapai 91% berdasarkan data 42 proyek EnergyHealing. 🌱';
+  if (m.includes('biaya') || m.includes('plts')) return 'Biaya PLTS Terapung bervariasi: <strong class="text-primary">Rp 8-12 Miliar/MW</strong> untuk kapasitas 1-5 MW. Proyek 25.5 MW seperti Situs Alpha estimasi total Rp 210-280 Miliar dengan ROI 6.2 tahun. ⚡';
+  if (m.includes('ph') || m.includes('tanah')) return 'pH tanah optimal untuk revegetasi bekas tambang adalah <strong class="text-primary">6.0 - 7.0</strong>. Saat ini pH Situs 042 berkisar 4.2-5.1. Aplikasi kapur dolomit + biochar direkomendasikan untuk menetralkan keasaman. 🧪';
+  if (m.includes('status') || m.includes('progres')) return 'Status terkini Zona Alpha: Restorasi 68.1%, Output Energi 12.4 MW, Efisiensi Panel 94.2%. Tahap 2 dari 4 sedang berjalan sesuai jadwal. 📊';
+  return 'Terima kasih pertanyaannya. Berdasarkan data real-time EnergyHealing, saya sedang menganalisis informasi terkini untuk memberikan rekomendasi terbaik. Silakan cek Dashboard untuk laporan lengkap. 📈';
+}
+</script>
+</body>
+</html>
